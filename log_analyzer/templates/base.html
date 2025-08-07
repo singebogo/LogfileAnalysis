@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Log Analyzer{% endblock %}</title>
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <!-- Font Awesome 图标 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/all.min.css') }}">
+    <!-- 自定义样式 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.7.2/css/all.css" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Top Header -->
+        <div class="row header">
+            <div class="col-10">
+                <h1>Log Analyzer</h1>
+            </div>
+                <div class="col-2" id="device-id-display">DeviceId: <span id="dID"></span></div>
+        </div>
+
+        <div class="row main-content">
+            <!-- Left Side Menu -->
+            <div class="col-md-2 sidebar">
+                <div class="sidebar-menu">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('index') }}"
+                               data-active-if="{{ request.endpoint == 'index' }}" id="nav-index">
+                                <i class="fas fa-home"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('settings') }}"
+                               data-active-if="{{ request.endpoint == 'settings' }}" id="nav-settings">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-md-10 content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="row footer">
+            <div class="col-12">
+                <p class="text-center">Log Analyzer &copy; 2023  -- kxw made: 2025年7月28日14:43:40 -- send me Email: oldkangme@163.com</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="{{ url_for('static', filename='js/jquery-3.6.0.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sweetalert2@11') }}"></script>
+    {% block extra_js %}{% endblock %}
+    <script>
+
+        // 获取或创建 Device ID
+        function getOrCreateDeviceId() {
+            let deviceId = getCookie('device_id');
+            if (!deviceId) {
+                deviceId = getDeviceId();
+                setCookie('device_id', deviceId, 365);
+            }
+            return deviceId;
+        }
+
+        // Cookie 操作函数
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + date.toUTCString();
+            document.cookie = name + "=" + value + ";" + expires + ";path=/";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        // 页面加载时设置 Device ID 显示
+        document.addEventListener('DOMContentLoaded', function() {
+            const deviceId = getOrCreateDeviceId();
+            document.getElementById('dID').textContent = deviceId;
+
+            // 为所有导航链接添加点击事件
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (this.getAttribute('href') && !this.hasAttribute('data-no-redirect')) {
+                        e.preventDefault();
+                        const url = this.getAttribute('href');
+
+                        // 设置 cookie 后跳转
+                        document.cookie = `device_id=${deviceId}; path=/`;
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+
+        // 原有的指纹和哈希函数保持不变
+        function getBrowserFingerprint() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(125, 1, 62, 20);
+            ctx.fillStyle = '#069';
+            ctx.fillText('BrowserFingerprint', 2, 15);
+            ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+            ctx.fillText('BrowserFingerprint', 4, 17);
+            return canvas.toDataURL();
+        }
+
+        function getDeviceId() {
+            const fingerprint = getBrowserFingerprint();
+            return hashString(fingerprint);
+        }
+
+        function hashString(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = (hash << 5) - hash + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+
+        // 高亮当前活动菜单项
+        document.querySelectorAll('[data-active-if]').forEach(link => {
+            if (link.dataset.activeIf === 'True') {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

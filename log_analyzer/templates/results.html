@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .stats-container, .errors-container, .file-container {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .plot {
+            margin: 20px 0;
+            text-align: center;
+        }
+        img {
+            max-width: 100%;
+        }
+        .file-header {
+            background-color: #e6f7ff;
+            padding: 10px;
+            margin: -15px -15px 15px -15px;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        .combined-header {
+            background-color: #f6ffed;
+            padding: 10px;
+            margin: -15px -15px 15px -15px;
+            border-bottom: 1px solid #ddd;
+            font-weight: bold;
+        }
+        .tab {
+            display: inline-block;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            margin-right: 5px;
+            background-color: #f1f1f1;
+        }
+        .tab.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+       /* 添加以下样式优化 */
+        .log-container {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+
+        .pagination {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .page-btn {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 0 5px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+
+        .page-btn.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .show-more {
+            display: block;
+            text-align: center;
+            padding: 5px;
+            background: #f5f5f5;
+            cursor: pointer;
+        }
+
+        .plot-placeholder {
+            min-height: 300px;
+            background: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Log Analysis Results</h1>
+    <a href="/">Back to Home</a>
+
+    <div style="margin: 20px 0;">
+        <div class="tab active" onclick="switchTab('combined')">Combined Analysis</div>
+        <div class="tab" onclick="switchTab('individual')">Individual Files</div>
+    </div>
+
+    <!-- Combined Analysis Tab -->
+    <div id="combined-tab" class="tab-content active">
+        <div class="stats-container">
+            <div class="combined-header">Combined Statistics</div>
+            <table>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Total Files Analyzed</td>
+                    <td>{{ combined_stats.total_files }}</td>
+                </tr>
+                <tr>
+                    <td>Total Log Entries</td>
+                    <td>{{ combined_stats.total_entries }}</td>
+                </tr>
+                <tr>
+                    <td>Total Errors</td>
+                    <td>{{ combined_stats.total_errors }}</td>
+                </tr>
+                <tr>
+                    <td>Total Warnings</td>
+                    <td>{{ combined_stats.total_warnings }}</td>
+                </tr>
+                <tr>
+                    <td>Earliest Log Time</td>
+                    <td>{{ combined_stats.earliest_time }}</td>
+                </tr>
+                <tr>
+                    <td>Latest Log Time</td>
+                    <td>{{ combined_stats.latest_time }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="plot">
+            <h2>Log Entries Over Time</h2>
+            <div class="plot-placeholder">
+                Loading chart...
+            </div>
+            <img data-src="data:image/png;base64,{{ time_plot }}"
+                 alt="Time Distribution"
+                 style="display: none;"
+                 onload="this.style.display='block'; this.previousElementSibling.style.display='none';">
+        </div>
+
+        <div class="plot">
+            <h2>Combined Error Type Distribution</h2>
+            <img src="data:image/png;base64,{{ combined_error_plot }}" alt="Combined Error Distribution">
+        </div>
+    </div>
+
+    <!-- Individual Files Tab -->
+    <div id="individual-tab" class="tab-content">
+        {% for data in file_data %}
+        <div class="file-container">
+            <div class="file-header">File: {{ data.filename }}</div>
+
+            <div class="stats-container">
+                <h3>Statistics</h3>
+                <table>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                    <tr>
+                        <td>Total Log Entries</td>
+                        <td>{{ data.stats.total_entries }}</td>
+                    </tr>
+                    <tr>
+                        <td>Error Count</td>
+                        <td>{{ data.stats.error_count }}</td>
+                    </tr>
+                    <tr>
+                        <td>Warning Count</td>
+                        <td>{{ data.stats.warning_count }}</td>
+                    </tr>
+                    <tr>
+                        <td>Start Time</td>
+                        <td>{{ data.stats.start_time }}</td>
+                    </tr>
+                    <tr>
+                        <td>End Time</td>
+                        <td>{{ data.stats.end_time }}</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="plot">
+                <h3>Log Entries Over Time</h3>
+                <img src="data:image/png;base64,{{ data.time_plot }}" alt="Time Distribution">
+            </div>
+
+            <div class="plot">
+                <h3>Error Type Distribution</h3>
+                <img src="data:image/png;base64,{{ data.error_plot }}" alt="Error Distribution">
+            </div>
+
+            <div class="errors-container">
+                <h3>Error Logs (Sample)</h3>
+                <table>
+                    <tr>
+                        <th>Log Entry</th>
+                    </tr>
+                    {% for error in data.error_logs %}
+                    <tr>
+                        <td>{{ error }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Update tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+        // 添加分页功能
+        let currentPage = 0;
+        const logsPerPage = 50;
+
+        function showPage(page) {
+            const logTables = document.querySelectorAll('.log-table');
+            logTables.forEach(table => {
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach((row, index) => {
+                    row.style.display = (index >= page * logsPerPage &&
+                                       index < (page + 1) * logsPerPage) ? '' : 'none';
+                });
+            });
+
+            currentPage = page;
+            updatePaginationControls();
+        }
+
+        function updatePaginationControls() {
+            document.querySelectorAll('.page-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.dataset.page) === currentPage) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // 延迟加载大型图表
+        function lazyLoadPlots() {
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                if (img.getBoundingClientRect().top < window.innerHeight + 500) {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                }
+            });
+        }
+
+        // 初始加载
+        document.addEventListener('DOMContentLoaded', function() {
+            showPage(0);
+            lazyLoadPlots();
+            window.addEventListener('scroll', lazyLoadPlots);
+        });
+
+        // 添加"显示更多"按钮功能
+        document.querySelectorAll('.show-more').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const container = this.parentElement.querySelector('.log-container');
+                container.style.maxHeight = 'none';
+                this.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

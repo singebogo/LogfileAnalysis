@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Log Analyzer - 用户配置{% endblock %}
+{% block extra_css %}
+    <style type="text/css">
+        .config-group {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .config-group h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .config-item {
+            margin: 1rem 0;
+        }
+        .config-item label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        .config-item input, .config-item select, .config-item textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .default-marker {
+            color: #666;
+            font-style: italic;
+            font-size: 0.8em;
+        }
+        button {
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+  <h1>用户配置中心</h1>
+  <div id="config-container">
+      <!-- 动态内容将在这里生成 -->
+  </div>
+  <button id="save-btn">保存配置</button>
+  <button id="default-btn">默认配置</button>
+{% endblock %}
+{% block extra_js %}
+<script>
+        // 初始化 - 使用 DOMContentLoaded 确保安全执行
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const userId = getDeviceId(); // 从会话或URL获取实际用户ID
+            const configContainer = document.getElementById('config-container');
+            const saveBtn = document.getElementById('save-btn');
+            const defaultBtn = document.getElementById('default-btn');
+            let currentConfigs = {};
+
+            // 设置设备ID显示（如果需要）
+            document.getElementById('dID').textContent = userId;
+
+            // 获取用户配置
+            function fetchUserConfigs() {
+                fetch(`/api/configs/${userId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        currentConfigs = data;
+                        renderConfigForm(data);
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+
+
+            // 获取配置
+            fetchUserConfigs();
+
+            // 添加错误边界处理
+            window.addEventListener('error', function(e) {
+                console.error('全局错误:', e.error);
+                configContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        发生意外错误: ${e.message}
+                    </div>
+                `;
+            });
+
+             // 保存配置
+            saveBtn.addEventListener('click', function(e) {
+                 e.preventDefault(); // 阻止默认行为
+                const inputs = configContainer.querySelectorAll('input, textarea, select');
+                const updatedConfigs = {};
+
+                inputs.forEach(input => {
+                    const group = input.dataset.group;
+                    const key = input.dataset.key;
+                    const dataType = input.dataset.type;
+
+                    if (!updatedConfigs[group]) {
+                        updatedConfigs[group] = {};
+                    }
+
+                    let value;
+                    if (dataType === 'number') {
+                        value = parseFloat(input.value);
+                    } else if (dataType === 'boolean') {
+                        value = input.checked;
+                    } else if (dataType === 'json') {
+                        try {
+                            value = JSON.parse(input.value);
+                        } catch {
+                            alert(`${key} 的JSON格式不正确`);
+                            return;
+                        }
+                    } else {
+                        value = input.value;
+                    }
+
+                    updatedConfigs[group][key] = {
+                        value: value,
+                        dataType: dataType
+                    };
+                });
+
+                fetch(`/api/configs/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+
+                    },
+                    body: JSON.stringify(updatedConfigs)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('配置保存成功！');
+                    fetchUserConfigs(); // 刷新配置
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+            // 渲染配置表单
+            function renderConfigForm(configGroups) {
+                configContainer.innerHTML = '';
+                if(!configGroups.error){
+                    for (const [groupName, groupItems] of Object.entries(configGroups)) {
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'config-group';
+
+                    const groupTitle = document.createElement('h2');
+                    groupTitle.textContent = groupName;
+                    groupDiv.appendChild(groupTitle);
+
+                    for (const [itemKey, item] of Object.entries(groupItems)) {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'config-item';
+
+                        const label = document.createElement('label');
+                        label.textContent = item.label;
+                        label.htmlFor = `config-${groupName}-${itemKey}`;
+                        itemDiv.appendChild(label);
+
+                        // 标记默认配置
+                        if (item.isDefault) {
+                            const defaultMarker = document.createElement('span');
+                            defaultMarker.className = 'default-marker';
+                            defaultMarker.textContent = ' (默认值)';
+                            label.appendChild(defaultMarker);
+                        }
+
+                        // 根据数据类型创建不同的输入控件
+                        let input;
+                        if (item.dataType === 'number') {
+                            input = document.createElement('input');
+                            input.type = 'number';
+                            input.value = item.value;
+                        } else if (item.dataType === 'boolean') {
+                            input = document.createElement('input');
+                            input.type = 'checkbox';
+                            input.checked = item.value;
+                        } else if (item.dataType === 'json') {
+                            input = document.createElement('textarea');
+                            input.value = JSON.stringify(item.value, null, 2);
+                        } else {
+                            input = document.createElement('input');
+                            input.type = 'text';
+                            input.value = item.value;
+                        }
+
+                        input.id = `config-${groupName}-${itemKey}`;
+                        input.dataset.group = groupName;
+                        input.dataset.key = itemKey;
+                        input.dataset.type = item.dataType;
+
+                        itemDiv.appendChild(input);
+                        groupDiv.appendChild(itemDiv);
+                    }
+
+                    configContainer.appendChild(groupDiv);
+                    saveBtn.style.display = 'block';
+                    defaultBtn.style.display = 'none';
+                }
+                }else {
+                    configContainer.innerHTML = '未有配置数据';
+                    saveBtn.style.display = 'none';
+                    defaultBtn.style.display = 'block';
+                }
+            }
+
+            defaultBtn.addEventListener('click', function(e) {
+                 e.preventDefault(); // 阻止默认行为
+                fetch(`/api/defaultconfigs/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('默认配置保存成功！');
+                    fetchUserConfigs(); // 刷新配置
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+        });
+
+    </script>
+{% endblock %}

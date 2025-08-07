@@ -1,0 +1,143 @@
+卷 Document 的文件夹 PATH 列表
+卷序列号为 6576-6006
+D:.
+|   .gitignore
+|   .python-version
+|   LICENSE
+|   main.py
+|   pyproject.toml
+|   README.md
+|   uv.lock            
++---imges
++---log_analyzer
+|   |   extensions.py
+|   |   handle_request.py
+|   |   log_analyzer_template.py
+|   |   log_parser.py
+|   |   models.py
+|   |   requirements.txt
+|   |   servers.py
+|   |   __init__.py
+|   |   
+|   +---blueprint
+|   |   |   historys.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           historys.cpython-39.pyc
+|   |           __init__.cpython-39.pyc
+|   |           
+|   +---config
+|   |   |   base.py
+|   |   |   development.py
+|   |   |   production.py
+|   |   |   testing.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           base.cpython-39.pyc
+|   |           development.cpython-39.pyc
+|   |           production.cpython-39.pyc
+|   |           testing.cpython-39.pyc
+|   |           __init__.cpython-39.pyc
+|   |           
+|   +---reports
+|   +---static
+|   |   +---css
+|   |   |       all.min.css
+|   |   |       bootstrap.min.css
+|   |   |       style.css
+|   |   |       temp.css
+|   |   |       
+|   |   \---js
+|   |           bootstrap.bundle.min.js
+|   |           chart.js
+|   |           jquery-3.6.0.min.js
+|   |           plotly-basic.min.js
+|   |           script.js
+|   |           sweetalert2@11
+|   |           temp.js
+|   |           
+|   +---templates
+|   |       base.html
+|   |       cleanup.html
+|   |       error.html
+|   |       history.html
+|   |       index.html
+|   |       report_template.html
+|   |       results.html
+|   |       settings.html
+|   |       
+|   +---uploads
+|   +---utils
+|   |   |   cleans.py
+|   |   |   combines.py
+|   |   |   errors.py
+|   |   |   files.py
+|   |   |   __init__.py
+|   |   |   
+|   |   \---__pycache__
+|   |           cleans.cpython-39.pyc
+|   |           combines.cpython-39.pyc
+|   |           files.cpython-39.pyc
+|   |           __init__.cpython-39.pyc
+|   |           
+|   \---__pycache__
+|           extensions.cpython-39.pyc
+|           log_analyzer_template.cpython-39.pyc
+|           log_parser.cpython-39.pyc
+|           models.cpython-39.pyc
+|           servers.cpython-39.pyc
+|           __init__.cpython-39.pyc
+|           
++---migrations
+|   |   alembic.ini
+|   |   env.py
+|   |   README
+|   |   script.py.mako
+|   |   
+|   +---versions
+|   |   |   0f279f55864d_update_analyzedfile.py
+|   |   |   5548212a64f4_update_analyzedfile.py
+|   |   |   dd5205ff10df_update_analysisbatch.py
+|   |   |   
+|   |   \---__pycache__
+|   |           0f279f55864d_update_analyzedfile.cpython-39.pyc
+|   |           5548212a64f4_update_analyzedfile.cpython-39.pyc
+|   |           dd5205ff10df_update_analysisbatch.cpython-39.pyc
+|   |           
+|   \---__pycache__
+|           env.cpython-39.pyc
+|           
++---reports
+|   +---354521871
+|   |       log_analysis_report_20250806_113511.html
+|   |       
+|   \---668749670
+|           log_analysis_report_20250806_175221.html
+|           log_analysis_report_20250807_093119.html
+|           log_analysis_report_20250807_093812.html
+|           log_analysis_report_20250807_140824.html
+|           log_analysis_report_20250807_143918.html
+|           log_analysis_report_20250807_144853.html
+|           log_analysis_report_20250807_150216.html
+|           log_analysis_report_20250807_151422.html
+|           log_analysis_report_20250807_152739.html
+|           log_analysis_report_20250807_160326.html
+|           log_analysis_report_20250807_161515.html
+|           
++---uploads
+|   +----755097998
+|   +---354521871
+|   \---668749670
+|           server_2025-07-27_4.log
+|           server_2025-07-27_5.log
+|           server_2025-07-27_6.log
+|           server_2025-07-27_7.log
+|           server_2025-07-28_1.log
+|           server_2025-07-28_2.log
+|           server_2025-07-29_1.log
+|           
+\---__pycache__
+        main.cpython-39.pyc
+        

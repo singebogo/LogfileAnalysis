@@ -1,0 +1,42 @@
+<h1>历史分析记录</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>批次ID</th>
+            <th>开始时间</th>
+            <th>文件数</th>
+            <th>错误数</th>
+            <th>状态</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for batch in batches %}
+        <tr>
+            <td>{{ batch.batch_id[:8] }}...</td>
+            <td>{{ batch.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>{{ batch.total_files }}</td>
+            <td>{{ batch.total_errors }}</td>
+            <td>
+                <span class="badge bg-{% if batch.status == 'completed' %}success{% elif batch.status == 'failed' %}danger{% else %}warning{% endif %}">
+                    {{ batch.status }}
+                </span>
+            </td>
+            <td>
+                <a href="{{ url_for('batch_details', batch_id=batch.batch_id) }}"
+                   class="btn btn-sm btn-outline-primary">
+                    详情
+                </a>
+                {% if batch.report_path %}
+                <a href="{{ url_for(filename='reports/' + batch.report_path) }}"
+                   target="_blank"
+                   class="btn btn-sm btn-outline-secondary">
+                    查看报告
+                </a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
